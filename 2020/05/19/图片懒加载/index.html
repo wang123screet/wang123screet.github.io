@@ -1,0 +1,332 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>图片懒加载原理 - Hexo</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+
+  
+  <meta name="keywords" content="zhaoo, hexo-theme-zhaoo,"> 
+  
+  <meta name="description" content="欢迎阅读，本文将介绍图片懒加载的两种方式。
+前言目前项..."> 
+  
+  <meta name="author" content="John Doe"> 
+
+  
+    <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  
+  
+    <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  
+  
+    <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  
+  
+    <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1445822_58xq2j9v1id.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/xcode.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css">
+
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {}
+    CONFIG = {
+      fancybox: true,
+      pjax: false,
+      lazyload: {
+        enable: true,
+        loadingImage: '/images/theme/loading.gif',
+      },
+      donate_alipay: 'https://pic.izhaoo.com/alipay.jpg',
+      donate_wechat: 'https://pic.izhaoo.com/wechat.jpg',
+      gitalk: {
+        enable: false,
+        clientID: '',
+        clientSecret: '',
+        id: window.location.pathname,
+        repo: '',
+        owner: '',
+        admin: ''
+      },
+      motto: {
+        api: '',
+        default: '一个博客'
+      },
+      galleries: {
+        enable: 'true'
+      },
+      fab: {
+        enable: 'true',
+        alwaysShow: 'false'
+      }
+    }
+  </script>
+
+  
+
+  
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body class="lock-screen">
+  <div class="loading"></div>
+  <nav class="menu">
+  <div class="menu-close">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <ul class="menu-content">
+    
+    
+    
+    
+    <li class="menu-item"><a href="/ "> 首页</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/galleries "> 摄影</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/archives "> 归档</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/tags "> 标签</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/categories "> 分类</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/about "> 关于</a></li>
+    
+  </ul>
+  <div class="menu-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</nav>
+  <main id="main">
+  <div class="container" id="container">
+    <article class="article">
+  <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">图片懒加载原理</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>2020-05-19</span
+        class="post-info-item">
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2703</span>
+    </div>
+  </div>
+</section>
+  <section class="main">
+    <section class="content">
+      <p>欢迎阅读，本文将介绍图片懒加载的两种方式。</p>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>目前项目中需要加载的图片很多，我们知道服务器请求次数过多，势必会影响到性能。为提高网页性能，需要实现图片的“按需加载”（图片懒加载），即图片默认暂时不加载，当图片即将进入可视区域时，再进行加载。</p>
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>当 <code>&lt;img&gt;</code> 的 src 的值存在时，浏览器发送请求，若没有 <code>src</code>，则不发送请求。所以我们在使用 <code>&lt;img&gt;</code> 标签时，可以先在 <code>src</code> 里放置一张默认 loading 图，真实的图片地址以数组的形式存放在其 <code>data-src</code> 属性中，如：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">&lt;img src =<span class="hljs-string">"loading.gif"</span> data-src=<span class="hljs-string">"img.jpg"</span>&gt;<br></code></pre></td></tr></table></figure>
+<p>当图片进入可视区域时，用 <code>data-src</code> 的值替换 <code>src</code> 里的默认值，从而实现图片的按需加载</p>
+<h1 id="实现方法"><a href="#实现方法" class="headerlink" title="实现方法"></a>实现方法</h1><p>实现的重点是怎么判断图片是否在可视区域。</p>
+<h2 id="方法一："><a href="#方法一：" class="headerlink" title="方法一："></a>方法一：</h2><p>使用 <code>IntersectionObserver</code> API，可以自动“观察”元素是否在可视区域，但此方法兼容性较差，目前 Chrome 只兼容到 Chrome 51+</p>
+<h2 id="方法二："><a href="#方法二：" class="headerlink" title="方法二："></a>方法二：</h2><p>监听 <code>scroll</code> 事件，调用目标元素的 <code>getBoundingClientRect()</code> 方法，得到该元素对应于“可视区域”左上角的坐标，再判断其是否在“可视区域”内，但操控滚动条时，会频繁操作DOM，容易造成性能问题，需要进行函数节流（请参考：<a href="http://www.ruanyifeng.com/blog/2015/09/web-page-performance-in-depth.html）。" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2015/09/web-page-performance-in-depth.html）。</a></p>
+<h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><h2 id="方法一：-1"><a href="#方法一：-1" class="headerlink" title="方法一："></a>方法一：</h2><p>浏览器提供的原生构造函数 <code>IntersectionObserver</code> 有两个参数：<code>callback</code> 回调函数，<code>option</code> 配置项（可选）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">var io = new IntersectionObserver(callback, option);<br></code></pre></td></tr></table></figure>
+
+<p>开始观察：<code>io.observe(document.getElementById(&#39;example&#39;))</code>;</p>
+<p>停止观察：<code>io.unobserve(element)</code>;</p>
+<p>关闭观察器：<code>io.disconnect()</code>;</p>
+<p>这里需要注意：<code>io.observe()</code> 每次观察一个DOM节点对象，如果需要观察多个，需要调用多次。</p>
+<h4 id="callback参数"><a href="#callback参数" class="headerlink" title="callback参数"></a>callback参数</h4><p>目标元素可见性发生变化时，会调用 <code>callback</code> 函数，<code>callback</code> 函数的参数<code>（entries）</code>是一个数组，每个成员都是一个<code>IntersectionObserverEntry</code> 对象，该对象提供目标元素的信息，一共有六个属性：</p>
+<ol>
+<li><p><code>time</code> ：可见性发生变化的时间，是一个高精度时间戳，单位为毫秒</p>
+</li>
+<li><p><code>target</code> ：被观察的目标元素，是一个 DOM 节点对象</p>
+</li>
+<li><p><code>rootBounds</code> ：根元素的矩形区域的信息，<code>getBoundingClientRect()</code> 方法的返回值，如果没有根元素（即直接相对于视口滚动），则返回null</p>
+</li>
+<li><p><code>boundingClientRect</code> ：目标元素的矩形区域的信息</p>
+</li>
+<li><p><code>intersectionRect</code> ：目标元素与视口（或根元素）的交叉区域的信息</p>
+</li>
+<li><p><code>intersectionRatio</code> ：目标元素的可见比例，即 <code>intersectionRect</code> 占 <code>boundingClientRect</code> 的比例，完全可见时为 1，完全不可见时小于等于 0。</p>
+</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash">const callbackFun = (entries) =&gt; &#123;<br>    entries.forEach((item) =&gt; &#123;<br>      <span class="hljs-keyword">if</span> (item.intersectionRatio &lt;= 0) <span class="hljs-built_in">return</span>;<br>      const &#123; target &#125; = item;<br>      // 将 h5 自定义属性赋值给 src (进入可见区则加载图片)<br>      target.src = target.dataset.src;<br>    &#125;)<br>  &#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="option参数"><a href="#option参数" class="headerlink" title="option参数"></a>option参数</h4><p>参数 <code>option</code> 可设置 <code>threshold</code> 属性、<code>root</code> 属性，<code>rootMargin</code> 属性。</p>
+<p>其中 <code>threshold</code> 属性决定了什么时候触发回调函数。它是一个数组，默认为 <code>[0]</code>。<br>例 <code>threshold = [0, 0.25]</code> 表示当目标元素与可视区域的交叉区域分别达到 <code>0%、25%</code> 时触发回调函数。<br>另外 <code>root</code> 和 <code>rootMargin</code> 属性，<code>root</code> 属性指定目标元素所在的容器节点（即根元素），<code>rootMargin</code> 属性用来定义根元素的 <code>margin</code>，用来扩展或缩小 <code>rootBounds</code> 这个矩形的大小，从而影响 <code>intersectionRect</code> 交叉区域的大小。适合目标元素在容器内滚动的场景。</p>
+<h2 id="方法二：-1"><a href="#方法二：-1" class="headerlink" title="方法二："></a>方法二：</h2><p>方法 <code>Element.getBoundingClientRect()</code> 返回元素的大小及其相对于视口的位置，这个方法返回一个名为 <code>ClientRect的DOMRect</code> 对象，包含了 <code>width、height、top、bottom、left、right</code> 的值。<br>我们知道 <code>window.innerHeight</code> 可以获得可视区域的高度，<code>getBoundingClientRect().top</code> 可以获取图片到可视区域顶部的距离，因此当：<code>getBoundingClientRect().top &lt;= window.innerHeight</code> 时，图片在可视区域内。</p>
+<h4 id="判断图片是否进入可视区域"><a href="#判断图片是否进入可视区域" class="headerlink" title="判断图片是否进入可视区域"></a>判断图片是否进入可视区域</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">eleIsInView = (element) =&gt; &#123;<br>  const eleRect = element.getBoundingClientRect();<br>  viewHeight = window.innerHeight;<br>  <span class="hljs-built_in">return</span> eleRect.top &lt;= viewHeight + 50;   // 提前50px的距离加载图片<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="加载图片"><a href="#加载图片" class="headerlink" title="加载图片"></a>加载图片</h4><p>页面加载时需要检查图片是否在可视区域，如果在就加载。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">window.addEventListener(<span class="hljs-string">'scroll'</span>, () =&gt; &#123;<br>  <span class="hljs-keyword">if</span> (!eleIsInView(element)) <span class="hljs-built_in">return</span> <span class="hljs-literal">false</span>;<br>  element.setAttribute(<span class="hljs-string">'src'</span>, element.getAttribute(<span class="hljs-string">'data-src'</span>));<br>&#125;, <span class="hljs-literal">false</span>);<br></code></pre></td></tr></table></figure>
+    </section>
+    <section class="extra">
+      
+        <section class="donate">
+  <!-- <div class="qrcode">
+    <img   class="lazyload" data-original="< %- theme.donate.alipay " src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==" >
+  </div> -->
+  <!-- <div class="icon">
+    <a href="javascript:;" id="alipay"><i class="iconfont iconalipay"></i></a>
+    <a href="javascript:;" id="wechat"><i class="iconfont iconwechat-fill"></i></a>
+  </div> -->
+</section>
+      
+      
+      
+<nav class="nav">
+  
+    <a href="/2020/05/24/%E5%9B%BE%E7%89%87%E6%87%92%E5%8A%A0%E8%BD%BD%E7%9A%84%E5%BA%94%E7%94%A8/"><i class="iconfont iconleft"></i>图片懒加载应用</a>
+  
+  
+    <a href="/2020/05/19/hello-world/">Hello World<i class="iconfont iconright"></i></a>
+  
+</nav>
+
+    </section>
+    
+  </section>
+</article>
+  </div>
+</main>
+  <footer class="footer">
+  <div class="footer-social">
+    
+    
+    
+    
+    
+    <a href="https://github.com/wang123screet " target="_blank" onMouseOver="this.style.color= '#24292E'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  icongithub-fill "></i>
+    </a>
+    
+    
+    
+    
+    
+    <a href="1362916323@qq.com " target="_blank" onMouseOver="this.style.color='#FFBE5B'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  iconmail"></i>
+    </a>
+    
+  </div>
+  <div class="footer-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  <div class="fab fab-menu">
+    <i class="iconfont iconmenu"></i>
+  </div>
+  
+</body>
+
+
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js"></script>
+
+
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+<script>
+  (function () {
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    } else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</html>

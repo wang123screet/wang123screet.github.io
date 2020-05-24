@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>图片懒加载应用 - Hexo</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+
+  
+  <meta name="keywords" content="zhaoo, hexo-theme-zhaoo,"> 
+  
+  <meta name="description" content="欢迎阅读，本文将介绍一款好用轻量的懒加载插件。
+前言在..."> 
+  
+  <meta name="author" content="John Doe"> 
+
+  
+    <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  
+  
+    <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  
+  
+    <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  
+  
+    <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1445822_58xq2j9v1id.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/xcode.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css">
+
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {}
+    CONFIG = {
+      fancybox: true,
+      pjax: false,
+      lazyload: {
+        enable: true,
+        loadingImage: '/images/theme/loading.gif',
+      },
+      donate_alipay: 'https://pic.izhaoo.com/alipay.jpg',
+      donate_wechat: 'https://pic.izhaoo.com/wechat.jpg',
+      gitalk: {
+        enable: false,
+        clientID: '',
+        clientSecret: '',
+        id: window.location.pathname,
+        repo: '',
+        owner: '',
+        admin: ''
+      },
+      motto: {
+        api: '',
+        default: '一个博客'
+      },
+      galleries: {
+        enable: 'true'
+      },
+      fab: {
+        enable: 'true',
+        alwaysShow: 'false'
+      }
+    }
+  </script>
+
+  
+
+  
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body class="lock-screen">
+  <div class="loading"></div>
+  <nav class="menu">
+  <div class="menu-close">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <ul class="menu-content">
+    
+    
+    
+    
+    <li class="menu-item"><a href="/ "> 首页</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/galleries "> 摄影</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/archives "> 归档</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/tags "> 标签</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/categories "> 分类</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/about "> 关于</a></li>
+    
+  </ul>
+  <div class="menu-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</nav>
+  <main id="main">
+  <div class="container" id="container">
+    <article class="article">
+  <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">图片懒加载应用</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>2020-05-24</span
+        class="post-info-item">
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2506</span>
+    </div>
+  </div>
+</section>
+  <section class="main">
+    <section class="content">
+      <p>欢迎阅读，本文将介绍一款好用轻量的懒加载插件。</p>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在图片懒加载原理篇我们讨论到，有两种方式可以实现图片懒加载：</p>
+<h4 id="方法一："><a href="#方法一：" class="headerlink" title="方法一："></a>方法一：</h4><p>可监听滚动条的 <code>scoll</code> 事件实现图片懒加载，但操作DOM次数过多，处理不好，容易造成网页性能问题</p>
+<h4 id="方法二："><a href="#方法二：" class="headerlink" title="方法二："></a>方法二：</h4><p>使用新的原生 标签:IntersectionObserver API 监听图片是否进入可视区域，但其兼容性不好，可以配合使用 <code>IntersectionObserver polyfill</code> 解决兼容性问题，附参考链接: <a href="https://github.com/w3c/IntersectionObserver/tree/master/polyfill" target="_blank" rel="noopener">https://github.com/w3c/IntersectionObserver/tree/master/polyfill</a></p>
+<h4 id="现提供方法三："><a href="#现提供方法三：" class="headerlink" title="现提供方法三："></a>现提供方法三：</h4><p>使用 <code>react-lazyload</code> 实现 <code>图片</code> 及<code>组件</code> 的懒加载，附参考链接： <a href="https://github.com/twobin/react-lazyload" target="_blank" rel="noopener">https://github.com/twobin/react-lazyload</a></p>
+<h1 id="为什么选择使用react-lazyload？"><a href="#为什么选择使用react-lazyload？" class="headerlink" title="为什么选择使用react-lazyload？"></a>为什么选择使用react-lazyload？</h1><ol>
+<li>考虑到性能，所有延迟加载的组件只有2个事件侦听器</li>
+<li>同时支持 <code>one-time lazy load</code> 和 <code>continuous lazy load</code> 模式</li>
+<li><code>scroll / resize</code> 事件处理程序受到限制，因此不会遇到频繁的更新，当让你也可以设置 <code>debounce</code> 模式， （ <code>debounce</code> 与 <code>throttle</code> 是开发中常用的高阶函数，作用都是为了防止函数被高频调用，换句话说就是，用来控制某个函数在一定时间内执行多少次）</li>
+<li>目前 <code>github</code> 已有 <code>4.5k</code> 的star数</li>
+<li>实际项目中，即可用于懒加载图片，又可懒加载组件（可用于实现滚动加载长列表功能）</li>
+</ol>
+<h1 id="react-lazyload-的使用"><a href="#react-lazyload-的使用" class="headerlink" title="react-lazyload 的使用"></a>react-lazyload 的使用</h1><ol>
+<li>安装<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">npm install --save react-lazyload<br></code></pre></td></tr></table></figure></li>
+<li>使用<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs bash">import React from <span class="hljs-string">'react'</span>;<br>import ReactDOM from <span class="hljs-string">'react-dom'</span>;<br>import LazyLoad from <span class="hljs-string">'react-lazyload'</span>;<br>import MyComponent from <span class="hljs-string">'./MyComponent'</span>;<br><br>const App = () =&gt; &#123;<br>  <span class="hljs-built_in">return</span> (<br>    &lt;div className=<span class="hljs-string">"list"</span>&gt;<br>     /*<br>      * 懒加载图片，设置高度为200<br>      */<br>      &lt;LazyLoad height=&#123;200&#125;&gt;<br>        &lt;img src=<span class="hljs-string">"tiger.jpg"</span> /&gt; <br>      &lt;/LazyLoad&gt;<br>      /*<br>      * 懒加载自定义组件<br>      */<br>      &lt;LazyLoad&gt;<br>        &lt;MyComponent /&gt;<br>      &lt;/LazyLoad&gt;<br>      /*<br>      * 懒加载自定义组件<br>      */<br>      &lt;LazyLoad height=&#123;200&#125; once offset=&#123;100&#125;&gt;<br>        &lt;MyComponent /&gt;<br>      &lt;/LazyLoad&gt;<br>    &lt;/div&gt;<br>  );<br>&#125;;<br><br>ReactDOM.render(&lt;App /&gt;, document.body);<br></code></pre></td></tr></table></figure></li>
+<li>属性及默认值<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs bash">LazyLoad.propTypes = &#123;<br>  scrollContainer: PropTypes.oneOfType([PropTypes.String，PropTypes.DOM), // 滚动试图，默认是window，也可自定义<br>  height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),<br>  once: PropTypes.bool,<br>  offset: PropTypes.oneOfType([PropTypes.number, PropTypes.arrayOf(PropTypes.number)]),<br>  overflow: PropTypes.bool, // 不是 window 滚动，而使用了 overflow: scroll <br>  resize: PropTypes.bool, // 是否监听 resize<br>  scroll: PropTypes.bool, // 是否监听滚动<br>  children: PropTypes.node,<br>  throttle: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]), // 监听触发频率<br>  debounce: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]), // 控制滚动事件<br>  placeholder: PropTypes.node,<br>  scrollContainer: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),<br>  unmountIfInvisible: PropTypes.bool,<br>  preventLoading: PropTypes.bool<br>&#125;;<br>// 默认值<br>LazyLoad.defaultProps = &#123;<br>  once: <span class="hljs-literal">false</span>,<br>  offset: 0,<br>  overflow: <span class="hljs-literal">false</span>,<br>  resize: <span class="hljs-literal">false</span>,<br>  scroll: <span class="hljs-literal">true</span>,<br>  unmountIfInvisible: <span class="hljs-literal">false</span>,<br>  preventLoading: <span class="hljs-literal">false</span>,<br>&#125;;<br></code></pre></td></tr></table></figure></li>
+</ol>
+
+    </section>
+    <section class="extra">
+      
+        <section class="donate">
+  <!-- <div class="qrcode">
+    <img   class="lazyload" data-original="< %- theme.donate.alipay " src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==" >
+  </div> -->
+  <!-- <div class="icon">
+    <a href="javascript:;" id="alipay"><i class="iconfont iconalipay"></i></a>
+    <a href="javascript:;" id="wechat"><i class="iconfont iconwechat-fill"></i></a>
+  </div> -->
+</section>
+      
+      
+      
+<nav class="nav">
+  
+  
+    <a href="/2020/05/19/%E5%9B%BE%E7%89%87%E6%87%92%E5%8A%A0%E8%BD%BD/">图片懒加载原理<i class="iconfont iconright"></i></a>
+  
+</nav>
+
+    </section>
+    
+  </section>
+</article>
+  </div>
+</main>
+  <footer class="footer">
+  <div class="footer-social">
+    
+    
+    
+    
+    
+    <a href="https://github.com/wang123screet " target="_blank" onMouseOver="this.style.color= '#24292E'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  icongithub-fill "></i>
+    </a>
+    
+    
+    
+    
+    
+    <a href="1362916323@qq.com " target="_blank" onMouseOver="this.style.color='#FFBE5B'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  iconmail"></i>
+    </a>
+    
+  </div>
+  <div class="footer-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  <div class="fab fab-menu">
+    <i class="iconfont iconmenu"></i>
+  </div>
+  
+</body>
+
+
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js"></script>
+
+
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+<script>
+  (function () {
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    } else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</html>
