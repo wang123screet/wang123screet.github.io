@@ -1,0 +1,322 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>浏览器渲染机制（上） - Hexo</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+
+  
+  <meta name="keywords" content="zhaoo, hexo-theme-zhaoo,"> 
+  
+  <meta name="description" content="欢迎阅读，本文分上下篇，将详细介绍浏览器进程和线程、J..."> 
+  
+  <meta name="author" content="John Doe"> 
+
+  
+    <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  
+  
+    <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  
+  
+    <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  
+  
+    <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1445822_58xq2j9v1id.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/xcode.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css">
+
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {}
+    CONFIG = {
+      fancybox: true,
+      pjax: false,
+      lazyload: {
+        enable: true,
+        loadingImage: '/images/theme/loading.gif',
+      },
+      donate_alipay: 'https://pic.izhaoo.com/alipay.jpg',
+      donate_wechat: 'https://pic.izhaoo.com/wechat.jpg',
+      gitalk: {
+        enable: false,
+        clientID: '',
+        clientSecret: '',
+        id: window.location.pathname,
+        repo: '',
+        owner: '',
+        admin: ''
+      },
+      motto: {
+        api: '',
+        default: '一个博客'
+      },
+      galleries: {
+        enable: 'true'
+      },
+      fab: {
+        enable: 'true',
+        alwaysShow: 'false'
+      }
+    }
+  </script>
+
+  
+
+  
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body class="lock-screen">
+  <div class="loading"></div>
+  <nav class="menu">
+  <div class="menu-close">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <ul class="menu-content">
+    
+    
+    
+    
+    <li class="menu-item"><a href="/ "> 首页</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/galleries "> 摄影</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/archives "> 归档</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/tags "> 标签</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/categories "> 分类</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/about "> 关于</a></li>
+    
+  </ul>
+  <div class="menu-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</nav>
+  <main id="main">
+  <div class="container" id="container">
+    <article class="article">
+  <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">浏览器渲染机制（上）</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>2020-05-31</span
+        class="post-info-item">
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2880</span>
+    </div>
+  </div>
+</section>
+  <section class="main">
+    <section class="content">
+      <p>欢迎阅读，本文分上下篇，将详细介绍浏览器进程和线程、JS代码的解析与执行、浏览器的渲染机制。主要想对之前名为《浏览器渲染机制和React虚拟DOM》的一次前端技术分享进行总结和扩充。</p>
+<p>#前言<br>作为一名前端开发人员，几乎每天都与浏览器打交道，但你知道我们前端开发最常用的 Chrome 浏览器到底是怎么解析我们书写的 JS 代码的吗？<br>别着急，在讲解之前，我们需要知道什么是进程和线程。</p>
+<h1 id="进程和线程的概念"><a href="#进程和线程的概念" class="headerlink" title="进程和线程的概念"></a>进程和线程的概念</h1><ol>
+<li><code>进程</code> 是 CPU 资源分配的最小单位（是能拥有资源和独立运行的最小单位）。对于操作系统来说，一个任务就是一个进程，比如打开一个浏览器就是启动了一个浏览器进程，打开一个 Word 就启动了一个 Word 进程。</li>
+<li><code>线程</code> 是 CPU 调度的最小单位（是建立在进程基础上的一次程序运行单位）。在一个进程内部，要同时做多件事，就需要同时运行多个“子任务”，我们把进程内的这些“子任务”称为线程。</li>
+</ol>
+<p>那浏览器的进程是什么样的呢？</p>
+<h2 id="浏览器里的进程架构"><a href="#浏览器里的进程架构" class="headerlink" title="浏览器里的进程架构"></a>浏览器里的进程架构</h2><p>以 Chrome 为例，它采用多进程架构，Chrome 也是第一个采用多进程架构的浏览器，它的每个进程都有自己核心的职责，它们相互配合完成浏览器的整体功能。其顶层存在一个 Browser process 用以协调浏览器的其它进程。<br>每个进程中又包含多个线程，一个进程内的多个线程也会协同工作，配合完成所在进程的职责。</p>
+<h3 id="该进程架构的优点"><a href="#该进程架构的优点" class="headerlink" title="该进程架构的优点"></a>该进程架构的优点</h3><ol>
+<li>由于新开一个 tab 页面将默认新建一个进程，所以单个 tab 页面崩溃不会影响到整个浏览器</li>
+<li>同样第三方插件崩溃也不会影响到整个浏览器</li>
+<li>多进程可以充分利用现代 CPU 多核的优势</li>
+<li>方便使用沙盒/沙箱模型[<a href="https://www.cnblogs.com/slly/p/6639173.html]隔离插件等进程，提高浏览器的稳定性" target="_blank" rel="noopener">https://www.cnblogs.com/slly/p/6639173.html]隔离插件等进程，提高浏览器的稳定性</a></li>
+</ol>
+<h3 id="该进程架构的缺点"><a href="#该进程架构的缺点" class="headerlink" title="该进程架构的缺点"></a>该进程架构的缺点</h3><ol>
+<li>系统为浏览器新开的进程分配内存、CPU 等资源，所以内存和 CPU 的资源消耗也会更大。<br>不过不用太担心，Chrome 在内存释放方面做的不错，基本内存都是能很快释放掉给其他程序运行的。</li>
+</ol>
+<p>我们已经知道 Chrome 采用多进程，那它究竟有哪些进程，这些进程有分别负责哪些工作呢？</p>
+<h2 id="浏览器的主要进程及其职责"><a href="#浏览器的主要进程及其职责" class="headerlink" title="浏览器的主要进程及其职责"></a>浏览器的主要进程及其职责</h2><h3 id="1-主进程"><a href="#1-主进程" class="headerlink" title="1. 主进程"></a>1. 主进程</h3><p>主进程负责浏览器界面的显示与交互，各个页面的管理、创建和销毁其他进程。网络的资源管理、下载等。</p>
+<h3 id="2-第三方插件进程"><a href="#2-第三方插件进程" class="headerlink" title="2. 第三方插件进程"></a>2. 第三方插件进程</h3><p>第三方插件进程每种类型的插件对应一个进程，仅当使用该插件时才创建。</p>
+<h3 id="3-GPU-进程"><a href="#3-GPU-进程" class="headerlink" title="3. GPU 进程"></a>3. GPU 进程</h3><p>GPU 进程最多只有一个，用于 3D 绘制等。</p>
+<h3 id="4-渲染进程（本篇重点）"><a href="#4-渲染进程（本篇重点）" class="headerlink" title="4. 渲染进程（本篇重点）"></a>4. 渲染进程（本篇重点）</h3><p>渲染进程称为浏览器渲染进程或浏览器内核，其内部是多线程的。主要负责页面渲染，脚本执行，事件处理等。</p>
+<p>渲染进程关系的浏览器究竟是怎么把我们书写的代码经过怎样的处理，并展示出来的？前面我们说了，进程可包含很多个线程，渲染进程包含 5 个线程： </p>
+<h4 id="4-1-GUI-渲染线程"><a href="#4-1-GUI-渲染线程" class="headerlink" title="4.1 GUI 渲染线程"></a>4.1 GUI 渲染线程</h4><p>GUI 渲染线程负责渲染浏览器界面，解析 HTML、CSS、构建 DOM 树和 RenderObject 树、布局和绘制等。<br>当界面需要重绘（Repaint）或由于某种操作引发回流(reflow)时，该线程就会执行。<br>这里需要注意，GUI 渲染线程与 JS 引擎线程是互斥的，当 JS 引擎执行时 GUI 线程会被挂起（相当于被冻结了），GUI 更新会被保存在一个队列中，等到 JS 引擎空闲时立即被执行。</p>
+<h4 id="4-2-JS-引擎线程"><a href="#4-2-JS-引擎线程" class="headerlink" title="4.2 JS 引擎线程"></a>4.2 JS 引擎线程</h4><p>Javascript 引擎，也称为 JS 内核，负责处理 Javascript 脚本程序。（例如 V8 引擎）<br>JS 引擎线程负责解析 Javascript 脚本，运行代码。<br>JS 引擎一直等待着任务队列中任务的到来，然后加以处理，一个 Tab 页（renderer 进程）中无论什么时候都只有一个 JS 线程在运行 JS 程序。<br>这里需要注意，GUI 渲染线程与 JS 引擎线程是互斥的，所以如果 JS 执行的时间过长，这样就会造成页面的渲染不连贯，导致页面渲染加载阻塞。</p>
+<h4 id="4-3-事件触发线程"><a href="#4-3-事件触发线程" class="headerlink" title="4.3 事件触发线程"></a>4.3 事件触发线程</h4><p>事件触发线程归属于浏览器而不是 JS 引擎，用来控制事件循环（可以理解为：JS 引擎自己都忙不过来，需要浏览器另开线程协助）<br>当 JS 引擎执行代码块如 setTimeOut 时（也可来自浏览器内核的其他线程，如鼠标点击、AJAX 异步请求等），会将对应任务添加到事件线程中<br>当对应的事件符合触发条件被触发时，该线程会把事件添加到待处理队列的队尾，等待 JS 引擎的处理<br>这里需要注意，由于 JS 的单线程关系，所以这些待处理队列中的事件都得排队等待 JS 引擎处理，当 JS 引擎空闲时才会去执行。</p>
+<h4 id="4-4-定时触发器线程"><a href="#4-4-定时触发器线程" class="headerlink" title="4.4 定时触发器线程"></a>4.4 定时触发器线程</h4><p>传说中的 setInterval 与 setTimeout 所在的线程。<br>浏览器定时计数器并不是由 JavaScript 引擎计数的，因为 JavaScript 引擎是单线程的，如果处于阻塞线程状态就会影响记计时的准确，因此通过单独线程来计时并触发定时，计时完毕后，添加到事件队列中，等待 JS 引擎空闲后执行。<br>这里需要注意，W3C 在 HTML 标准中规定，规定要求 setTimeout 中低于 4ms 的时间间隔算为 4ms。</p>
+<h4 id="4-5-异步-http-请求线程"><a href="#4-5-异步-http-请求线程" class="headerlink" title="4.5 异步 http 请求线程"></a>4.5 异步 http 请求线程</h4><p>XMLHttpRequest 在连接后是通过浏览器新开一个线程请求的。检测到状态变更时，如果设置有回调函数，异步线程就产生状态变更事件，将这个回调再放入事件队列中，再由 JavaScript 引擎执行。</p>
+<h3 id="浏览器渲染流程（下篇详细讲解）"><a href="#浏览器渲染流程（下篇详细讲解）" class="headerlink" title="浏览器渲染流程（下篇详细讲解）"></a>浏览器渲染流程（下篇详细讲解）</h3><p>解析 HTML 文件，构建 DOM 树，同时浏览器主进程负责下载 CSS 文件。<br>CSS 文件下载完成，解析 CSS 文件成树形的数据结构，然后结合 DOM 树合并成 RenderObject 树。<br>布局 RenderObject 树 （Layout/reflow），负责 RenderObject 树中的元素的尺寸，位置等计算。<br>绘制 RenderObject 树 （paint），绘制页面的像素信息。<br>浏览器主进程将默认的图层和复合图层交给 GPU 进程，GPU 进程再将各个图层合成（composite），最后显示出页面。</p>
+<p>可以思考的问题：</p>
+<h3 id="Q-为什么-Javascript-要是单线程的"><a href="#Q-为什么-Javascript-要是单线程的" class="headerlink" title="Q: 为什么 Javascript 要是单线程的 ?"></a>Q: 为什么 Javascript 要是单线程的 ?</h3><p>这是由于 Javascript 这门脚本语言诞生的使命所致！JavaScript 为处理页面中用户的交互，以及操作 DOM 树、CSS 样式树来给用户呈现一份动态而丰富的交互体验和服务器逻辑的交互处理。<br>如果 JavaScript 使用多线程的方式来操作这些 UI DOM，可能出现 UI 操作的冲突。<br>如果 Javascript 是多线程的话，在多线程的交互下，处于 UI 中的 DOM 节点就可能成为一个临界资源，<br>假设存在两个线程同时操作一个 DOM，一个负责修改一个负责删除，那么这个时候就需要浏览器来裁决使用哪个线程的执行结果。当然我们可以通过锁来解决上面的问题，但为了避免因为引入了锁而带来更大的复杂性，Javascript 在最初就选择了单线程执行。</p>
+
+    </section>
+    <section class="extra">
+      
+        <section class="donate">
+  <!-- <div class="qrcode">
+    <img   class="lazyload" data-original="< %- theme.donate.alipay " src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==" >
+  </div> -->
+  <!-- <div class="icon">
+    <a href="javascript:;" id="alipay"><i class="iconfont iconalipay"></i></a>
+    <a href="javascript:;" id="wechat"><i class="iconfont iconwechat-fill"></i></a>
+  </div> -->
+</section>
+      
+      
+      
+<nav class="nav">
+  
+  
+    <a href="/2020/05/24/%E5%9B%BE%E7%89%87%E6%87%92%E5%8A%A0%E8%BD%BD%E7%9A%84%E5%BA%94%E7%94%A8/">图片懒加载应用<i class="iconfont iconright"></i></a>
+  
+</nav>
+
+    </section>
+    
+  </section>
+</article>
+  </div>
+</main>
+  <footer class="footer">
+  <div class="footer-social">
+    
+    
+    
+    
+    
+    <a href="https://github.com/wang123screet " target="_blank" onMouseOver="this.style.color= '#24292E'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  icongithub-fill "></i>
+    </a>
+    
+    
+    
+    
+    
+    <a href="1362916323@qq.com " target="_blank" onMouseOver="this.style.color='#FFBE5B'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  iconmail"></i>
+    </a>
+    
+  </div>
+  <div class="footer-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  <div class="fab fab-menu">
+    <i class="iconfont iconmenu"></i>
+  </div>
+  
+</body>
+
+
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js"></script>
+
+
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+<script>
+  (function () {
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    } else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</html>
