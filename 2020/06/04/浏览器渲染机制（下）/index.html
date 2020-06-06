@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>浏览器渲染机制（下） - Hexo</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+
+  
+  <meta name="keywords" content="zhaoo, hexo-theme-zhaoo,"> 
+  
+  <meta name="description" content="欢迎阅读，本文分上下篇，将详细介绍浏览器进程和线程、J..."> 
+  
+  <meta name="author" content="John Doe"> 
+
+  
+    <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  
+  
+    <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  
+  
+    <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  
+  
+    <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1445822_58xq2j9v1id.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/xcode.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css">
+
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {}
+    CONFIG = {
+      fancybox: true,
+      pjax: false,
+      lazyload: {
+        enable: true,
+        loadingImage: '/images/theme/loading.gif',
+      },
+      donate_alipay: 'https://pic.izhaoo.com/alipay.jpg',
+      donate_wechat: 'https://pic.izhaoo.com/wechat.jpg',
+      gitalk: {
+        enable: false,
+        clientID: '',
+        clientSecret: '',
+        id: window.location.pathname,
+        repo: '',
+        owner: '',
+        admin: ''
+      },
+      motto: {
+        api: '',
+        default: '一个博客'
+      },
+      galleries: {
+        enable: 'true'
+      },
+      fab: {
+        enable: 'true',
+        alwaysShow: 'false'
+      }
+    }
+  </script>
+
+  
+
+  
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body class="lock-screen">
+  <div class="loading"></div>
+  <nav class="menu">
+  <div class="menu-close">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <ul class="menu-content">
+    
+    
+    
+    
+    <li class="menu-item"><a href="/ "> 首页</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/galleries "> 摄影</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/archives "> 归档</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/tags "> 标签</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/categories "> 分类</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/about "> 关于</a></li>
+    
+  </ul>
+  <div class="menu-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</nav>
+  <main id="main">
+  <div class="container" id="container">
+    <article class="article">
+  <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">浏览器渲染机制（下）</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>2020-06-04</span
+        class="post-info-item">
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1797</span>
+    </div>
+  </div>
+</section>
+  <section class="main">
+    <section class="content">
+      <p>欢迎阅读，本文分上下篇，将详细介绍浏览器进程和线程、JS代码的解析与执行、浏览器的渲染机制。主要想对之前名为《浏览器渲染机制和React虚拟DOM》的一次前端技术分享进行总结和扩充。</p>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>了解了浏览器的进程线程架构及其主要进程任务及职责后，本篇主要讲解浏览器的渲染机制。</p>
+<h1 id="浏览器关键渲染路径"><a href="#浏览器关键渲染路径" class="headerlink" title="浏览器关键渲染路径"></a>浏览器关键渲染路径</h1><p><img   class="lazyload" data-original="./img/1.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="浏览器关键渲染路径1"></p>
+<p><img   class="lazyload" data-original="http://image.baidu.com/search/detail?ct=503316480&z=undefined&tn=baiduimagedetail&ipn=d&word=%E6%98%93%E7%83%8A%E5%8D%83%E7%8E%BA&step_word=&ie=utf-8&in=&cl=2&lm=-1&st=undefined&hd=undefined&latest=undefined&copyright=undefined&cs=104668402,3163299382&os=2431443557,2661367452&simid=3430678092,337301474&pn=37&rn=1&di=138820&ln=1949&fr=&fmq=1591453735919_R&fm=&ic=undefined&s=undefined&se=&sme=&tab=0&width=undefined&height=undefined&face=undefined&is=0,0&istype=0&ist=&jit=&bdtype=0&spn=0&pi=0&gsm=0&objurl=http%3A%2F%2Fimg.mm4000.com%2Ffile%2F6%2F4d%2F8e00e9c14c_800.jpg&rpstart=0&rpnum=0&adpicid=0&force=undefined" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="浏览器关键渲染路径2"></p>
+<h2 id="步骤说明"><a href="#步骤说明" class="headerlink" title="步骤说明"></a>步骤说明</h2><h3 id="1：解析HTML生成DOM树：遍历html文档节点，生成DOM（Document-Object-Model）树"><a href="#1：解析HTML生成DOM树：遍历html文档节点，生成DOM（Document-Object-Model）树" class="headerlink" title="1：解析HTML生成DOM树：遍历html文档节点，生成DOM（Document Object Model）树"></a>1：解析HTML生成DOM树：遍历html文档节点，生成DOM（Document Object Model）树</h3><p><img   class="lazyload" data-original="./img/2.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="解析HTML生成DOM树"></p>
+<h3 id="2：解析CSS生成CSSOM规则树（1、2步会同时进行）"><a href="#2：解析CSS生成CSSOM规则树（1、2步会同时进行）" class="headerlink" title="2：解析CSS生成CSSOM规则树（1、2步会同时进行）"></a>2：解析CSS生成CSSOM规则树（1、2步会同时进行）</h3><p><img   class="lazyload" data-original="./img/3.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="解析CSS生成CSSOM规则树"><br>CSSOM（CSS Object Model）又叫层叠样式表对象模型，是一棵仅含有样式信息的树。<br>CSS解析过程中，子节点会继承父节点的样式。这就是层叠规则以及CSS为什么叫CSS层叠样式表。<br>浏览器解析CSS文件并生成CSSOM（CSS Object Model）规则树，每个CSS文件都被分析成一个StyleSheet对象，每个对象都包含CSS规则。<br>CSS规则对象包含对应于CSS语法的选择器和声明对象以及其他对象。</p>
+<h6 id="注意："><a href="#注意：" class="headerlink" title="注意："></a>注意：</h6><p>html解析遇到link、script、img等标签时，浏览器会向服务器发送请求资源。<br>script的加载或者执行都会阻塞html解析、其他下载线程以及渲染线程。<br>CSS构建CSSOM的速度将直接影响首屏渲染速度。</p>
+<h6 id="Dom树构建阻塞："><a href="#Dom树构建阻塞：" class="headerlink" title="Dom树构建阻塞："></a>Dom树构建阻塞：</h6><p>当浏览器遇到一个 script 标记时，DOM 构建将暂停，直至脚本完成执行，然后继续构建DOM。每次去执行JavaScript脚本都会严重地阻塞DOM树的构建，如果JavaScript脚本还操作了CSSOM，而正好这个CSSOM还没有下载和构建，浏览器甚至会延迟脚本执行和构建DOM，直至完成其CSSOM的下载和构建。</p>
+<h6 id="渲染阻塞："><a href="#渲染阻塞：" class="headerlink" title="渲染阻塞："></a>渲染阻塞：</h6><p>解析HTML构建DOM时，若遇见CSS会立刻构建CSSOM，它们可以同时进行。<br>但CSS不行，不完整的CSS是无法使用的，因为CSS的每个属性都可以改变CSSOM，所以会存在这样一个问题：假设前面几个字节的CSS将字体大小设置为16px，后面又将字体大小设置为14px，那么如果不把整个CSSOM规则树构建完整，最终得到的CSSOM其实是不准确的。所以必须等CSSOM构建完毕才能进入到下一个阶段，哪怕DOM已经构建完，它也得等CSSOM，然后才能进入下一个阶段。</p>
+<h6 id="Q：怎么避免渲染阻塞？"><a href="#Q：怎么避免渲染阻塞？" class="headerlink" title="Q：怎么避免渲染阻塞？"></a>Q：怎么避免渲染阻塞？</h6><ol>
+<li>引入顺序上，CSS优先，JS置后，且应尽量少影响DOM构建</li>
+<li>写CSS时，尽量使用id和class，不要过度层叠</li>
+<li>对JS、CSS进行压缩<br>另：查找样式表是按照从右到左的顺序匹配的：<br>例如： div p {font-size: 16px}，会先寻找所有p标签并判断它的父标签是否为div，<br>之后才会决定要不要采用这个样式进行渲染。切忌过度层叠。</li>
+</ol>
+<h3 id="3：将DOM树与CSSOM规则树合并在一起生成渲染树"><a href="#3：将DOM树与CSSOM规则树合并在一起生成渲染树" class="headerlink" title="3：将DOM树与CSSOM规则树合并在一起生成渲染树"></a>3：将DOM树与CSSOM规则树合并在一起生成渲染树</h3><p>通过DOM树和CSS规则树我们便可以构建渲染树，浏览器会先从DOM树的根节点开始遍历每个可见节点，为每个可见节点，找到其适配的CSS样式规则并应用，<br>渲染树构建完成后，每个节点都是可见节点并且都含有其内容和对应规则的样式。这也是渲染树与DOM树的最大区别所在。</p>
+<h6 id="注意：-1"><a href="#注意：-1" class="headerlink" title="注意："></a>注意：</h6><p>渲染树是用于显示，那些不可见的元素当然就不会在这棵树中出现了，如display: none</p>
+<h3 id="4：遍历渲染树开始布局，计算每个节点的位置大小信息"><a href="#4：遍历渲染树开始布局，计算每个节点的位置大小信息" class="headerlink" title="4：遍历渲染树开始布局，计算每个节点的位置大小信息"></a>4：遍历渲染树开始布局，计算每个节点的位置大小信息</h3><p>渲染树的绘制呈现是由浏览器的UI组件完成的，比如button、div、span、img等组件。</p>
+<h6 id="渲染树布局（layout）："><a href="#渲染树布局（layout）：" class="headerlink" title="渲染树布局（layout）："></a>渲染树布局（layout）：</h6><p>布局阶段会从渲染树的根节点开始遍历，确定每个节点对象在页面上的确切大小与位置，<br>布局阶段的输出是一个盒子模型，它会精确地捕获每个元素在屏幕内的确切大小与位置。</p>
+<h6 id="渲染树绘制（paint）："><a href="#渲染树绘制（paint）：" class="headerlink" title="渲染树绘制（paint）："></a>渲染树绘制（paint）：</h6><p>在绘制阶段，遍历渲染树，调用渲染器的paint()方法在屏幕上显示其内容。<br>根据渲染树布局，计算CSS样式，即每个节点在页面中的大小和位置等几何信息。</p>
+<h6 id="注意：-2"><a href="#注意：-2" class="headerlink" title="注意："></a>注意：</h6><p>HTML默认是流式布局的，CSS和JS会打破这种布局，改变DOM的外观样式以及大小和位置。<br>这时就要提到两个重要概念：replaint和reflow。</p>
+<p>重排/回流（reflow）：意味着元件的几何尺寸变了，我们需要重新验证并计算渲染树。</p>
+<p>重绘（repaint）：屏幕的一部分重画，不影响整体布局，比如某个CSS的背景色变了，<br>但元素的几何尺寸和位置不变。</p>
+<h3 id="5：将渲染树每个节点绘制到屏幕"><a href="#5：将渲染树每个节点绘制到屏幕" class="headerlink" title="5：将渲染树每个节点绘制到屏幕"></a>5：将渲染树每个节点绘制到屏幕</h3><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p><img   class="lazyload" data-original="./img/4.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="浏览器渲染机制总结"></p>
+
+    </section>
+    <section class="extra">
+      
+        <section class="donate">
+  <!-- <div class="qrcode">
+    <img   class="lazyload" data-original="< %- theme.donate.alipay " src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==" >
+  </div> -->
+  <!-- <div class="icon">
+    <a href="javascript:;" id="alipay"><i class="iconfont iconalipay"></i></a>
+    <a href="javascript:;" id="wechat"><i class="iconfont iconwechat-fill"></i></a>
+  </div> -->
+</section>
+      
+      
+      
+<nav class="nav">
+  
+  
+    <a href="/2020/05/31/%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E6%9C%BA%E5%88%B6%EF%BC%88%E4%B8%8A%EF%BC%89/">浏览器渲染机制（上）<i class="iconfont iconright"></i></a>
+  
+</nav>
+
+    </section>
+    
+  </section>
+</article>
+  </div>
+</main>
+  <footer class="footer">
+  <div class="footer-social">
+    
+    
+    
+    
+    
+    <a href="https://github.com/wang123screet " target="_blank" onMouseOver="this.style.color= '#24292E'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  icongithub-fill "></i>
+    </a>
+    
+    
+    
+    
+    
+    <a href="1362916323@qq.com " target="_blank" onMouseOver="this.style.color='#FFBE5B'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  iconmail"></i>
+    </a>
+    
+  </div>
+  <div class="footer-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  <div class="fab fab-menu">
+    <i class="iconfont iconmenu"></i>
+  </div>
+  
+</body>
+
+
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js"></script>
+
+
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+<script>
+  (function () {
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    } else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</html>
