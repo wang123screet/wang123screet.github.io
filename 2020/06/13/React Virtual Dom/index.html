@@ -1,0 +1,334 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>React虚拟Dom - Hexo</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+
+  
+  <meta name="keywords" content="zhaoo, hexo-theme-zhaoo,"> 
+  
+  <meta name="description" content="欢迎阅读，本篇主要介绍React虚拟Dom和diff算..."> 
+  
+  <meta name="author" content="John Doe"> 
+
+  
+    <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  
+  
+    <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  
+  
+    <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  
+  
+    <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1445822_58xq2j9v1id.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/xcode.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css">
+
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {}
+    CONFIG = {
+      fancybox: true,
+      pjax: false,
+      lazyload: {
+        enable: true,
+        loadingImage: '/images/theme/loading.gif',
+      },
+      donate_alipay: 'https://pic.izhaoo.com/alipay.jpg',
+      donate_wechat: 'https://pic.izhaoo.com/wechat.jpg',
+      gitalk: {
+        enable: false,
+        clientID: '',
+        clientSecret: '',
+        id: window.location.pathname,
+        repo: '',
+        owner: '',
+        admin: ''
+      },
+      motto: {
+        api: '',
+        default: '一个博客'
+      },
+      galleries: {
+        enable: 'true'
+      },
+      fab: {
+        enable: 'true',
+        alwaysShow: 'false'
+      }
+    }
+  </script>
+
+  
+
+  
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body class="lock-screen">
+  <div class="loading"></div>
+  <nav class="menu">
+  <div class="menu-close">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <ul class="menu-content">
+    
+    
+    
+    
+    <li class="menu-item"><a href="/ "> 首页</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/galleries "> 摄影</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/archives "> 归档</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/tags "> 标签</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/categories "> 分类</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/about "> 关于</a></li>
+    
+  </ul>
+  <div class="menu-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</nav>
+  <main id="main">
+  <div class="container" id="container">
+    <article class="article">
+  <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">React虚拟Dom</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>2020-06-13</span
+        class="post-info-item">
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2941</span>
+    </div>
+  </div>
+</section>
+  <section class="main">
+    <section class="content">
+      <p>欢迎阅读，本篇主要介绍React虚拟Dom和diff算法.</p>
+<h2 id="什么是React虚拟Dom"><a href="#什么是React虚拟Dom" class="headerlink" title="什么是React虚拟Dom"></a>什么是React虚拟Dom</h2><p>Virtual DOM 是一种编程概念。在这个概念里，UI 以一种理想化的，或者说“虚拟的”表现形式被保存于内存中，并通过如 ReactDOM 等类库使之与“真实的” DOM 同步。这一过程叫做协调。</p>
+<p>这种方式赋予了 React 声明式的 API：您告诉 React 希望让 UI 是什么状态，React 就确保 DOM 匹配该状态。这使您可以从属性操作、事件处理和手动 DOM 更新这些在构建应用程序时必要的操作中解放出来。</p>
+<p>与其将 <code>“Virtual DOM”</code> 视为一种技术，不如说它是一种模式，人们提到它时经常是要表达不同的东西。在 React 的世界里，术语 <code>“Virtual DOM”</code> 通常与 <code>React 元素</code> 关联在一起，因为它们都是代表了用户界面的对象。而 <code>React</code> 也使用一个名为 <code>“fibers”</code> 的内部对象来存放组件树的附加信息。上述二者也被认为是 React 中 “Virtual DOM” 实现的一部分。</p>
+<h2 id="为什么要引入虚拟Dom"><a href="#为什么要引入虚拟Dom" class="headerlink" title="为什么要引入虚拟Dom"></a>为什么要引入虚拟Dom</h2><p><img   class="lazyload" data-original="/images/virtualDom.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="过去和现在的对比"></p>
+<p>我们知道，在过去未使用框架的时代，开发者往往需要纯手动操作Dom，繁琐且开发难度大，因为开发者需要记住原生Dom的一堆操作方法。有了框架后，框架为开发者掩盖了底层的Dom操作，让其用更声明式的方式来描述代码目的，从而让代码更易维护。</p>
+<p><img   class="lazyload" data-original="/images/virtualDom2.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="vritual Dom的优势"><br>除了为开发者简化了Dom操作外，virtual Dom的产生也为多端渲染提供了可能。</p>
+<h2 id="虚拟Dom与原生Dom的对比"><a href="#虚拟Dom与原生Dom的对比" class="headerlink" title="虚拟Dom与原生Dom的对比"></a>虚拟Dom与原生Dom的对比</h2><p>React 的基本思维模式是每次有变动就整个重新渲染整个应用。如果没有 Virtual DOM，简单来想就是直接重置 innerHTML。很多人都没有意识到，在一个大型列表所有数据都变了的情况下，重置 innerHTML 其实是一个还算合理的操作。真正的问题是在 “全部重新渲染” 的思维模式下，即使只有一行数据变了，它也需要重置整个 innerHTML，这时候显然就有大量的浪费。</p>
+<p>我们可以比较一下 <code>innerHTML</code> vs <code>Virtual DOM</code> 的重绘性能消耗：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">innerHTML:  render html string O(template size) + 重新创建所有 DOM 元素 O(DOM size)<br></code></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">Virtual DOM: render Virtual DOM + diff O(template size) + 必要的 DOM 更新 O(DOM change)<br></code></pre></td></tr></table></figure>
+<p>Virtual DOM render + diff 显然比渲染 html 字符串要慢，但是，它依然是纯 js 层面的计算，比起后面的 DOM 操作来说，依然便宜了太多。可以看到，innerHTML 的总计算量不管是 js 计算还是 DOM 操作都是和整个界面的大小相关，但 Virtual DOM 的计算量里面，只有 js 计算和界面大小相关，DOM 操作是和数据的变动量相关的。前面说了，和 DOM 操作比起来，js 计算是极其便宜的。这才是为什么要有 Virtual DOM：它保证了：</p>
+<ol>
+<li>不管你的数据变化多少，每次重绘的性能都可以接受</li>
+<li>你依然可以用类似 innerHTML 的思路去写你的应用</li>
+</ol>
+<h2 id="virtual-Dom-的-Diff-算法"><a href="#virtual-Dom-的-Diff-算法" class="headerlink" title="virtual Dom 的 Diff 算法"></a>virtual Dom 的 Diff 算法</h2><p>在 React 中，构建 UI 界面的思路是由当前状态决定界面。前后两个状态就对应两套界面，然后由 React 来比较两个界面的区别，这就需要对 DOM 树进行 Diff 算法分析，需要了解，Diff算法并非React原创，它是一个经典算法，时间复杂度是O(n^3)。</p>
+<p>React结合Web界面的特点，通过制定大胆的策略，将Diff 算法时间复杂度从O(n^3)降低到O(n)：</p>
+<ol>
+<li>Web UI中节点跨层级的移动操作特别少，可以忽略不计</li>
+<li>两个相同组件产生类似的 DOM 结构，不同的组件产生不同的 DOM 结构</li>
+<li>对于同一层次的一组子节点，它们可以通过唯一的 id 进行区分</li>
+</ol>
+<h5 id="逐层进行节点比较，Web-UI中跨层级操作dom的情况很少，可以忽略不计："><a href="#逐层进行节点比较，Web-UI中跨层级操作dom的情况很少，可以忽略不计：" class="headerlink" title="逐层进行节点比较，Web UI中跨层级操作dom的情况很少，可以忽略不计："></a>逐层进行节点比较，Web UI中跨层级操作dom的情况很少，可以忽略不计：</h5><p><img   class="lazyload" data-original="/images/virtualDom3.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="逐层进行节点比较"><br>React 只会对相同颜色方框内的 DOM 节点进行比较，即同一个父节点下的所有子节点。当发现节点已经不存在，则该节点及其子节点会被完全删除掉，不会用于进一步的比较。这样只需要对树进行一次遍历，便能完成整个 DOM 树的比较。</p>
+<h5 id="tree-diff："><a href="#tree-diff：" class="headerlink" title="tree diff："></a>tree diff：</h5><p><img   class="lazyload" data-original="/images/virtualDom4.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="tree diff"></p>
+<h5 id="component-diff："><a href="#component-diff：" class="headerlink" title="component diff："></a>component diff：</h5><p><img   class="lazyload" data-original="/images/virtualDom5.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="component diff"></p>
+<ol>
+<li>若是同一类型的组件，按照原策略继续比较 Virtual Dom 树</li>
+<li>如果不是同一类组件，直接替换整个组件</li>
+<li>对于同类型的组件，有可能 Virtual Dom 没有变化，</li>
+<li>react允许用户通过 shouldCompontentUpdate() 来判断该组件是否需要进行diff运算</li>
+</ol>
+<p>虽然看上去这样的算法有些“简陋”，但是其基于的是第一个假设：两个不同组件一般产生不一样的 DOM 结构。根据 React 官方文档，这一假设至今为止没有导致严重的性能问题。这当然也给我们一个提示，在实现自己的组件时，保持稳定的 DOM 结构会有助于性能的提升。例如，我们有时可以通过 CSS 隐藏或显示某些节点，而不是真的移除或添加 DOM 节点。</p>
+<h5 id="element-diff："><a href="#element-diff：" class="headerlink" title="element diff："></a>element diff：</h5><p>当节点处于同一层级时，diff提供3种节点操作：插入、移动、删除</p>
+<ol>
+<li>全新节点需要插入</li>
+<li>旧集合中有新组件类型，且element是可更新类型，需要做移动操作</li>
+<li>旧组件类型，新集合里也有，但对应的element类型不同，不能直接复用，需要删除</li>
+</ol>
+<p>当一个节点从 div 变成 span 时，简单的直接删除 div 节点，并插入一个新的 span 节点。这符合我们对真实 DOM 操作的理解。<br>需要注意的是，删除节点意味着彻底销毁该节点，而不是再后续的比较中再去看是否有另外一个节点等同于该删除的节点。如果该删除的节点之下有子节点，那么这些子节点也会被完全删除，它们也不会用于后面的比较。这也是算法时间复杂度能够降低到 O（n）的原因。</p>
+<p>当 React 在同一个位置遇到不同的组件时，也是简单的销毁第一个组件，而把新创建的组件加上去。这正是应用了第一个假设，不同的组件一般会产生不一样的 DOM 结构，与其浪费时间去比较它们基本上不会等价的 DOM 结构，还不如完全创建一个新的组件加上去。</p>
+<p><img   class="lazyload" data-original="/images/virtualDom6.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="element diff"><br><img   class="lazyload" data-original="/images/virtualDom7.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  alt="element diff"><br>相信大家对以上“警告”并不陌生。这是 React 在遇到列表时却又找不到 key 时提示的警告。虽然无视这条警告大部分界面也会正确工作，但这通常意味着潜在的性能问题。因为 React 觉得自己可能无法高效的去更新这个列表。<br>列表节点的操作通常包括添加、删除和排序，对于列表节点提供唯一的 key 属性可以帮助 React 定位到正确的节点进行比较，从而大幅减少 DOM 操作次数，提高了性能。<br>需要注意的是：我们不推荐直接使用index作为key，因为在子节点发生排序操作的时候，操作了index，如果你再使用index作为key，那index就是变的，可能导致未知错误，例如多个input框相互影响等。</p>
+<p>virtual Dom的学习暂时告一段落，后续博客打算做一个JS基础系列，敬请期待。</p>
+
+    </section>
+    <section class="extra">
+      
+        <section class="donate">
+  <!-- <div class="qrcode">
+    <img   class="lazyload" data-original="< %- theme.donate.alipay " src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==" >
+  </div> -->
+  <!-- <div class="icon">
+    <a href="javascript:;" id="alipay"><i class="iconfont iconalipay"></i></a>
+    <a href="javascript:;" id="wechat"><i class="iconfont iconwechat-fill"></i></a>
+  </div> -->
+</section>
+      
+      
+      
+<nav class="nav">
+  
+  
+    <a href="/2020/06/04/%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E6%9C%BA%E5%88%B6%EF%BC%88%E4%B8%8B%EF%BC%89/">浏览器渲染机制（下）<i class="iconfont iconright"></i></a>
+  
+</nav>
+
+    </section>
+    
+  </section>
+</article>
+  </div>
+</main>
+  <footer class="footer">
+  <div class="footer-social">
+    
+    
+    
+    
+    
+    <a href="https://github.com/wang123screet " target="_blank" onMouseOver="this.style.color= '#24292E'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  icongithub-fill "></i>
+    </a>
+    
+    
+    
+    
+    
+    <a href="1362916323@qq.com " target="_blank" onMouseOver="this.style.color='#FFBE5B'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  iconmail"></i>
+    </a>
+    
+  </div>
+  <div class="footer-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  <div class="fab fab-menu">
+    <i class="iconfont iconmenu"></i>
+  </div>
+  
+</body>
+
+
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js"></script>
+
+
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+<script>
+  (function () {
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    } else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</html>
