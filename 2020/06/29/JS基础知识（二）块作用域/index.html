@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>JS中的块作用域 - Hexo</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+
+  
+  <meta name="keywords" content="zhaoo, hexo-theme-zhaoo,"> 
+  
+  <meta name="description" content="欢迎阅读，本篇主要介绍JS中的块作用域.
+前言 尽管上..."> 
+  
+  <meta name="author" content="John Doe"> 
+
+  
+    <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  
+  
+    <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  
+  
+    <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  
+  
+    <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1445822_58xq2j9v1id.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/xcode.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css">
+
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {}
+    CONFIG = {
+      fancybox: true,
+      pjax: false,
+      lazyload: {
+        enable: true,
+        loadingImage: '/images/theme/loading.gif',
+      },
+      donate_alipay: 'https://pic.izhaoo.com/alipay.jpg',
+      donate_wechat: 'https://pic.izhaoo.com/wechat.jpg',
+      gitalk: {
+        enable: false,
+        clientID: '',
+        clientSecret: '',
+        id: window.location.pathname,
+        repo: '',
+        owner: '',
+        admin: ''
+      },
+      motto: {
+        api: '',
+        default: '一个博客'
+      },
+      galleries: {
+        enable: 'true'
+      },
+      fab: {
+        enable: 'true',
+        alwaysShow: 'false'
+      }
+    }
+  </script>
+
+  
+
+  
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body class="lock-screen">
+  <div class="loading"></div>
+  <nav class="menu">
+  <div class="menu-close">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <ul class="menu-content">
+    
+    
+    
+    
+    <li class="menu-item"><a href="/ "> 首页</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/galleries "> 摄影</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/archives "> 归档</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/tags "> 标签</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/categories "> 分类</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/about "> 关于</a></li>
+    
+  </ul>
+  <div class="menu-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</nav>
+  <main id="main">
+  <div class="container" id="container">
+    <article class="article">
+  <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">JS中的块作用域</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>2020-06-29</span
+        class="post-info-item">
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2249</span>
+    </div>
+  </div>
+</section>
+  <section class="main">
+    <section class="content">
+      <p>欢迎阅读，本篇主要介绍JS中的块作用域.</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p> 尽管上篇讲到的函数是最常见的作用域单元，本质上，声明在一个函数内部的变量或函数会在所处的作用域中“隐藏”起来，这是有意为之的良好软件设计原则。但函数不是唯一的作用域单元，其他类型作用域是存在的，通过使用其他类型的作用域单元甚至可以实现维护起来更加优秀、简洁的代码。</p>
+<h2 id="什么是块作用域？"><a href="#什么是块作用域？" class="headerlink" title="什么是块作用域？"></a>什么是块作用域？</h2><p>块作用域指的是变量和函数不仅可以属于所处的作用域，也可以属于某个代码块，通常指 <code>{}</code> 内部。</p>
+<h2 id="for"><a href="#for" class="headerlink" title="for () {  }"></a>for () {  }</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-keyword">for</span> (var i=0; i &lt; 10; i++) &#123;<br>  console.log(i);<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>相信大家对上述代码非常熟悉，我们在for循环的头部直接定义变量 i，通常是因为只想在for循环内部的上下文中使用 i，而忽略了 i 会绑定在外部作用域（函数或全局）中的事实。这就是块级作用域的用处。变量的声明应该距离使用的地方越近越好，并最大限度地本地化。块作用域是一个用来对之前 <code>最小授权</code> 原则进行扩展的工具，将代码从函数中隐藏信息扩展为在块中隐藏信息。</p>
+<h2 id="with-关键字"><a href="#with-关键字" class="headerlink" title="with 关键字"></a>with 关键字</h2><p>with 关键字也是块级作用域的一种形式，用 with 从对象中创建的作用域仅在 with 声明中而非外部作用域中有效，由于 with 关键字并不常用且不推荐使用，再此不做详细讨论。</p>
+<h2 id="try-catch"><a href="#try-catch" class="headerlink" title="try/catch"></a>try/catch</h2><p>很少有人注意到JS的ES3规范中规定 try / catch 的 catch 分句会创建一个块级作用域，其中声明的变量仅在 catch 内部有效。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">try &#123;<br>  undefined(); // 执行一个非法操作来制造异常<br>&#125; catch (err) &#123;<br>  console.log(err); // 能够正常执行<br>&#125;<br><br>console.log(err); // err not found<br></code></pre></td></tr></table></figure>
+<p>尽管这个行为已经被标准化了，而且被大部分的标准JS环境所支持，但是当同一作用域中的两个或多个 catch 分句用同样的标识符名称声明时，很多静态检查工具（并不是全部）还是会发出警告，实际上这并不是重复定义，因为所有变量都被安全地限制在块作用域内部，为了避免不必要的警告，我们一般会将 catch 的参数命名为 err1、err2 等，或者关掉检查工具。</p>
+<h2 id="let"><a href="#let" class="headerlink" title="let"></a>let</h2><p>ES6 引入了 let 关键字，提供了除了 var 之外的另一种变量声明方式。let 关键字可以将变量绑定到所在的任意作用域中（通常是 {…}内部）。或者说，let 为其声明的变量隐式的“劫持”了所在的块作用域。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash">var foo = <span class="hljs-literal">true</span>;<br><br><span class="hljs-keyword">if</span> (foo) &#123;<br>  <span class="hljs-built_in">let</span> bar = foo * 2;<br>  bar = something(bar);<br>  console.log(bar);<br>&#125;<br>console.log(bar); // ReferenceError<br></code></pre></td></tr></table></figure>
+<p>用 let 将变量附加在一个已经存在的块级作用域上的行为是隐式的。在开发中，如果我们没有特意关注哪些作用域中绑定了哪些变量，并且习惯性移动或将这些块包含在其他块里，就会导致代码变得混乱。为作用域显示的创建块可以部分解决这个问题，使代码的附属关系变得更加清晰，通常来讲，显式的代码优于隐式或一些精巧但不清晰的代码。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash">var foo = <span class="hljs-literal">true</span>;<br><br><span class="hljs-keyword">if</span> (foo) &#123; // &lt;-- 显示的块<br>  &#123;<br>    <span class="hljs-built_in">let</span> bar = foo * 2;<br>    bar = something(bar);<br>    console.log(bar);<br>  &#125;<br>&#125;<br>console.log(bar); // ReferenceError<br></code></pre></td></tr></table></figure>
+<p>只要是声明有效，在声明中的任意位置都可以使用 {…} 括号来为 let 创建一个用于绑定的块，我们在 if 声明内部显式的创建了一个块，如果需要对其进行重构，整个块都可以被方便地移动而不会对外部 if 声明的位置和语义产生任何影响。<br>需要说明的是，在我们的项目中，显示创建块级作用域（{…}）需要和团队成员在写法、分块原则、代码易读性上达成共识后再使用，使用不当，反而会让代码变得难读懂、难维护，所以你可能会看到有人反而不推荐此种写法。</p>
+<h2 id="const"><a href="#const" class="headerlink" title="const"></a>const</h2><p>除了 let 之外，ES6 还引入了 const，同样可以用来创建块作用域变量，其值是固定的常量。之后任何试图修改值的操作都会引起错误。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs bash">var foo = <span class="hljs-literal">true</span>;<br><br><span class="hljs-keyword">if</span> (foo) &#123;<br>  var a = 2;<br>  const b = 3; // 包含在 <span class="hljs-keyword">if</span> 中的块作用域常量<br><br>  a = 3; // 正常<br>  b = 4; // 错误<br>&#125;<br><br>console.log(a); // 3<br>console.log(b); // ReferenceError<br></code></pre></td></tr></table></figure>
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>从ES3开始，try / catch 结构在 catch 分句中具有块作用域。<br>从ES6中引入了 let 关键字用来在任意代码块中声明变量。if () { let a = 2; } 会声明一个劫持了 if 的 {…} 块的变量，并将变量添加到这个块中。<br>块级作用域不应该完全作为函数作用域的代替方案，两种功能应该同时存在，开发者可以并且应该根据需要选择使用哪种作用域，创造可读、可维护的优良代码。</p>
+<p>下篇计划学习 - 提升。感谢一起学习。</p>
+
+    </section>
+    <section class="extra">
+      
+        <section class="donate">
+  <!-- <div class="qrcode">
+    <img   class="lazyload" data-original="< %- theme.donate.alipay " src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==" >
+  </div> -->
+  <!-- <div class="icon">
+    <a href="javascript:;" id="alipay"><i class="iconfont iconalipay"></i></a>
+    <a href="javascript:;" id="wechat"><i class="iconfont iconwechat-fill"></i></a>
+  </div> -->
+</section>
+      
+      
+      
+<nav class="nav">
+  
+  
+    <a href="/2020/06/14/JS%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%EF%BC%88%E4%B8%80%EF%BC%89%E5%87%BD%E6%95%B0%E4%BD%9C%E7%94%A8%E5%9F%9F/">JS基础(第一篇) - 函数作用域<i class="iconfont iconright"></i></a>
+  
+</nav>
+
+    </section>
+    
+  </section>
+</article>
+  </div>
+</main>
+  <footer class="footer">
+  <div class="footer-social">
+    
+    
+    
+    
+    
+    <a href="https://github.com/wang123screet " target="_blank" onMouseOver="this.style.color= '#24292E'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  icongithub-fill "></i>
+    </a>
+    
+    
+    
+    
+    
+    <a href="1362916323@qq.com " target="_blank" onMouseOver="this.style.color='#FFBE5B'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  iconmail"></i>
+    </a>
+    
+  </div>
+  <div class="footer-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  <div class="fab fab-menu">
+    <i class="iconfont iconmenu"></i>
+  </div>
+  
+</body>
+
+
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js"></script>
+
+
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+<script>
+  (function () {
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    } else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</html>
