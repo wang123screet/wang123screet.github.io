@@ -1,0 +1,332 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>JS基础（三）提升 - Hexo</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+
+  
+  <meta name="keywords" content="zhaoo, hexo-theme-zhaoo,"> 
+  
+  <meta name="description" content="欢迎阅读，本篇主要介绍JS中的提升.
+前言到目前为止，..."> 
+  
+  <meta name="author" content="John Doe"> 
+
+  
+    <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  
+  
+    <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  
+  
+    <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  
+  
+    <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1445822_58xq2j9v1id.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/xcode.min.css">
+
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css">
+
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {}
+    CONFIG = {
+      fancybox: true,
+      pjax: false,
+      lazyload: {
+        enable: true,
+        loadingImage: '/images/theme/loading.gif',
+      },
+      donate_alipay: 'https://pic.izhaoo.com/alipay.jpg',
+      donate_wechat: 'https://pic.izhaoo.com/wechat.jpg',
+      gitalk: {
+        enable: false,
+        clientID: '',
+        clientSecret: '',
+        id: window.location.pathname,
+        repo: '',
+        owner: '',
+        admin: ''
+      },
+      motto: {
+        api: '',
+        default: '一个博客'
+      },
+      galleries: {
+        enable: 'true'
+      },
+      fab: {
+        enable: 'true',
+        alwaysShow: 'false'
+      }
+    }
+  </script>
+
+  
+
+  
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body class="lock-screen">
+  <div class="loading"></div>
+  <nav class="menu">
+  <div class="menu-close">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <ul class="menu-content">
+    
+    
+    
+    
+    <li class="menu-item"><a href="/ "> 首页</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/galleries "> 摄影</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/archives "> 归档</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/tags "> 标签</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/categories "> 分类</a></li>
+    
+    
+    
+    
+    <li class="menu-item"><a href="/about "> 关于</a></li>
+    
+  </ul>
+  <div class="menu-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</nav>
+  <main id="main">
+  <div class="container" id="container">
+    <article class="article">
+  <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">JS基础（三）提升</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>2020-06-30</span
+        class="post-info-item">
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2603</span>
+    </div>
+  </div>
+</section>
+  <section class="main">
+    <section class="content">
+      <p>欢迎阅读，本篇主要介绍JS中的提升.</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>到目前为止，我们已经很熟悉作用域的概念了，函数作用域和块作用域的概念是一样的：任何声明在某个作用域内的变量，都将附属于这个作用域。我们直觉上会认为JS代码在执行时是自上而下一行一行执行的，但实际上，这并不完全正确，请继续阅读。</p>
+<h2 id="什么是提升？"><a href="#什么是提升？" class="headerlink" title="什么是提升？"></a>什么是提升？</h2><p>思考一个问题：是声明在前还是赋值在前？<br>在讨论这个问题前，我们需要了解一点编译原理的知识。在传统编译语言的流程中，程序中的一段源码在执行前会经历三个步骤，统称为 <code>编译</code>。</p>
+<ol>
+<li>分词 / 词法分析<br>这个过程会将由字符组成的字符串分解成对编程语言来说有意义的代码块，这些代码块被统称为 <code>词法单元</code>。例如：var a = 2;这段程序会被分解为词法单元：var、a、=、2、;。空格是否会被当作词法单元，取决于空格在这门语言中是否有意义。</li>
+<li>解析 / 语法分析<br>这个过程是将词法单元流（数组）转换成一个由元素逐级嵌套所组成的代表了<code>程序语法结构的树（AST）</code>，被称为 <code>抽象语法树</code>。</li>
+<li>代码生成<br>将AST转换为可执行代码的过程被称为代码生成，这个过程与语言、目标平台等息息相关。简单来说就是有某种方法可将 <code>var a = 2;</code> 的AST转化为一组机器指令，用来创建一个叫作 a 的变量（包括分配内存等），并将一个值存储在 a 中。</li>
+</ol>
+<p>比起那些编译只需要 <code>3</code> 个步骤的语言的编译器，js引擎要复杂的多，例如：在词法分析和代码生成阶段有特定的步骤来对运行性能进行优化，包括对冗余元素进行优化等。JS引擎不会有大量的时间用来进行优化，因此与其他语言不同，JS的编译过程不是发生在构建之前的。对JS来说，大部分情况下编译发生在代码执行前的几微秒（甚至更短）的时间里。<br>简单来说，任何JS代码片段在执行之前都要进行编译（通常就在执行前）。因此，JS编译器首先会对var a = 2;这段程序进行编译，然后做好准备执行它，通常马上就会执行它。</p>
+<p>我们知道了JS引擎会在解释JS代码之前首先对其进行编译，编译阶段中的一部分工作就是找到所有的声明，并用合适的作用域将他们关联起来，因此，正确的思路是：包括变量和函数在内的所有声明都会在任何代码被执行前首先被处理。JS实际上会把 <code>var a = 2;</code> 看成2个声明：<code>var a;</code>和<code>a = 2;</code>，第一个定义声明是在<code>编译阶段</code>进行的，第二个赋值声明会被留在原地等待执行阶段。这个过程就好像变量和函数声明从它们代码中出出现的位置被“移动”到了最上面，这个过程就是 <code>“提升”</code>。值得注意的是：每个作用域都会进行提升操作，但并不是提升到整个程序的最上面。</p>
+<h2 id="变量声明提升"><a href="#变量声明提升" class="headerlink" title="变量声明提升"></a>变量声明提升</h2><p>例1：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">a = 2;<br>var a;<br>console.log(a);<br></code></pre></td></tr></table></figure>
+<p>你认为会输出什么结果呢？undefined吗？<br>其实这里会输出2。</p>
+<p><code>经过变量声明提升后：</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">var a;<br>a = 2;<br>console.log(a); // 2<br></code></pre></td></tr></table></figure>
+<p>例2：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">console.log(a);<br>var a = 2;<br></code></pre></td></tr></table></figure>
+<p>这段代码又会输出什么结果呢？是2 ？还是 ReferenceError ？<br>其实这里会输出 undefined。</p>
+<p><code>经过变量声明提升后：</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">var a;<br>console.log(a); // undefined<br>a = 2;<br></code></pre></td></tr></table></figure>
+
+<h2 id="函数声明提升"><a href="#函数声明提升" class="headerlink" title="函数声明提升"></a>函数声明提升</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">foo();<br><span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">foo</span></span>() &#123;<br>  console.log(a); // undefined<br>  var a = 2;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>由于函数声明的提升，此代码可正常运行。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">// 函数声明<br><span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">foo1</span></span> () &#123;<br>  // ...<br>&#125;<br>foo1(); // 正常运行<br></code></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">// 函数表达式<br> foo2(); // 不是 ReferenceError，而是 TypeError<br> var foo2 = <span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">bar</span></span>() &#123;<br>   // ...<br> &#125;<br></code></pre></td></tr></table></figure>
+<p>可以看到，函数声明会被提升，但函数表达式却不会被提升。<br>变量标识符foo2()被提升并分配给所在作用域（这里是全局作用域），因此foo2()不会导致 ReferenceError ，但是foo2此时并没有赋值（如果它是一个函数声明而不是函数表达式，那么就会赋值）。foo2()由于对 undefined 值进行函数调用而导致非法操作，因此抛出 TypeError异常。</p>
+<p>同时也要记住，即使是具名的函数表达式，名称标识符在复制之前也无法在所在作用域中使用。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">foo(); // TypeError<br>bar(); // ReferenceError<br>var foo = <span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">bar</span></span>() &#123;<br>  // ...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>上述代码会被识别为：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">var foo;<br>foo();<br>bar();<br>foo = <span class="hljs-keyword">function</span> &#123;<br>  var bar = ... self ...<br>  // ...<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="函数优先原则"><a href="#函数优先原则" class="headerlink" title="函数优先原则"></a>函数优先原则</h2><p>函数声明和变量声明都会被提升，若两者名称相同，则函数首先被提升，然后才是变量。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash">foo();<br>var foo;<br><br><span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">foo</span></span>() &#123;<br>  console.log(1);<br>&#125;<br><br>foo = <span class="hljs-function"><span class="hljs-title">function</span></span>() &#123;<br>  console.log(2);<br>&#125;<br>此段代码将输出 1 。<br></code></pre></td></tr></table></figure>
+<p>尽管 var foo; 出现在 function foo() 的声明之前，但它是重复声明（因此被忽略了），因为函数的声明会被提升到普通变量之前。</p>
+<p>上述代码会被识别为：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">foo</span></span>() &#123;<br> console.log(1);<br>&#125;<br>foo();<br>foo = <span class="hljs-function"><span class="hljs-title">function</span></span>() &#123;<br>  console.log(2);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>重复的var声明会被忽略，但出现在后面的函数声明还是可以覆盖前面的函数声明的。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs bash">foo(); // 3<br><br><span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">foo</span></span>() &#123;<br> console.log(1);<br>&#125;<br><br>foo = <span class="hljs-function"><span class="hljs-title">function</span></span>() &#123;<br>  console.log(2);<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">foo</span></span>() &#123;<br> console.log(3);<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>因此，要避免代码里重复声明。</p>
+
+    </section>
+    <section class="extra">
+      
+        <section class="donate">
+  <!-- <div class="qrcode">
+    <img   class="lazyload" data-original="< %- theme.donate.alipay " src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==" >
+  </div> -->
+  <!-- <div class="icon">
+    <a href="javascript:;" id="alipay"><i class="iconfont iconalipay"></i></a>
+    <a href="javascript:;" id="wechat"><i class="iconfont iconwechat-fill"></i></a>
+  </div> -->
+</section>
+      
+      
+      
+<nav class="nav">
+  
+  
+    <a href="/2020/06/29/JS%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%8C%EF%BC%89%E5%9D%97%E4%BD%9C%E7%94%A8%E5%9F%9F/">JS基础（二）块作用域<i class="iconfont iconright"></i></a>
+  
+</nav>
+
+    </section>
+    
+  </section>
+</article>
+  </div>
+</main>
+  <footer class="footer">
+  <div class="footer-social">
+    
+    
+    
+    
+    
+    <a href="https://github.com/wang123screet " target="_blank" onMouseOver="this.style.color= '#24292E'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  icongithub-fill "></i>
+    </a>
+    
+    
+    
+    
+    
+    <a href="1362916323@qq.com " target="_blank" onMouseOver="this.style.color='#FFBE5B'"
+      onMouseOut="this.style.color='#33333D'">
+      <i class="iconfont footer-social-item  iconmail"></i>
+    </a>
+    
+  </div>
+  <div class="footer-copyright"><p>Copyright© 2020 | by lilith</p></div>
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  <div class="fab fab-menu">
+    <i class="iconfont iconmenu"></i>
+  </div>
+  
+</body>
+
+
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js"></script>
+
+
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+<script>
+  (function () {
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    } else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</html>
