@@ -15,8 +15,8 @@
   
   <meta name="keywords" content="zhaoo, hexo-theme-zhaoo,"> 
   
-  <meta name="description" content="欢迎阅读，本篇主要介绍JS中的作用域闭包.‘
-前言Ja..."> 
+  <meta name="description" content="欢迎阅读，本篇主要介绍JS中的作用域闭包。
+前言Jav..."> 
   
   <meta name="author" content="John Doe"> 
 
@@ -158,13 +158,13 @@
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>2020-07-07</span
         class="post-info-item">
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>5725</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>5724</span>
     </div>
   </div>
 </section>
   <section class="main">
     <section class="content">
-      <p>欢迎阅读，本篇主要介绍JS中的作用域闭包.<br>‘</p>
+      <p>欢迎阅读，本篇主要介绍JS中的作用域闭包。</p>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>JavaScript中闭包无处不在，你只需要能够识别并拥抱它。闭包是基于词法作用域书写代码时产生的自然结果，你甚至不需要为了利用它们而有意的创建闭包，闭包的创建和使用在你的代码中随处可见。</p>
 <h2 id="什么是闭包？"><a href="#什么是闭包？" class="headerlink" title="什么是闭包？"></a>什么是闭包？</h2><p>当函数可以记住并访问所在词法作用域时，就产生了闭包，即使函数是在当前词法作用域之外执行。<br><code>例子：</code></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">foo</span></span>() &#123;<br>  var a = 2;<br><br>  <span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">bar</span></span>() &#123;<br>    console.log(a); // 2<br>  &#125;<br>  bar();<br>&#125;<br>foo();<br></code></pre></td></tr></table></figure>
